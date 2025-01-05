@@ -1,0 +1,65 @@
+---
+title: "PAULS_III"
+output: pdf_document
+date: "2025-01-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load required libraries
+library(tidyverse)
+library(ggplot2)
+library(e1071)  # For skewness and kurtosis
+library(cluster)
+library(corrplot)
+library(dplyr)
+library(reshape2)
+library(RColorBrewer)
+
+# Read the CSV file
+FakeNewsNet <- read_csv("9491485/FakeNewsNet.csv")
+
+# Check the column names
+colnames(FakeNewsNet)
+```
+```{r}
+# Calculate Spearman correlation between tweet_num and real
+
+spearman_correlation <- cor(FakeNewsNet$tweet_num, FakeNewsNet$real, method = "spearman")
+
+# Print the Spearman correlation
+
+cat("The Spearman correlation value is:", spearman_correlation, "\n")
+
+spearman_matrix <- matrix(c(1, spearman_correlation, spearman_correlation, 1), 
+                          nrow = 2, ncol = 2, 
+                          dimnames = list(c("tweet_num", "real"), c("tweet_num", "real")))
+
+# Melt the matrix to long format for ggplot
+spearman_melted <- melt(spearman_matrix)
+```
+
+
+```{r}
+# Plot heatmap with variable names
+ggplot(spearman_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "red", high = "blue", mid = "lightgray", midpoint = 0, limit = c(-1, 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Spearman Correlation Heatmap", x = "Variables", y = "Variables") +
+  geom_text(aes(label = round(value, 2)), color = "black", size = 6)
+
+# Plot heatmap
+ggplot(spearman_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "red", high = "blue", mid = "white", midpoint = 0, limit = c(-1, 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Spearman Correlation Heatmap", x = "", y = "")
+
+```
+
